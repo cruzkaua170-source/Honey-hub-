@@ -521,3 +521,8 @@ Tab1:AddTextBox({
     
   end
 })
+local Window = Theme:MakeWindow("Honey Hub", "Default", 1024)
+local Tab = Window:CreateTab("Principal")
+Tab:CreateButton("Testar Script", function()
+    print("Honey Hub Ativado!")
+end)
