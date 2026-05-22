@@ -498,8 +498,8 @@ Tab1:AddSlider({
   Increase = 1,
   Default = 16,
   Callback = function(Value)
-  
-  end
+
+end
 })
 
 Tab1:AddDropdown({
@@ -518,11 +518,7 @@ Tab1:AddTextBox({
   Description = "1 Item on 1 Server", 
   PlaceholderText = "item only",
   Callback = function(Value)
-    
-  end
+end 
 })
-local Window = Theme:MakeWindow("Honey Hub", "Default", 1024)
-local Tab = Window:CreateTab("Principal")
-Tab:CreateButton("Testar Script", function()
-    print("Honey Hub Ativado!")
-end)
+return redzlib
+
