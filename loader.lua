@@ -1,5 +1,5 @@
 local redzlib = loadstring(game:HttpGet(
-    "https://raw.githubusercontent.com/cruzkaua170-source/Honey-hub-/main/main.lua"
+"https://raw.githubusercontent.com/cruzkaua170-source/Honey-hub-/main/main.lua"
 ))()
 
 local Window = redzlib:MakeWindow({
@@ -10,183 +10,240 @@ local Window = redzlib:MakeWindow({
     Key = "HONEY-8C2D9-4B5E7-6F1A3"
 })
 
-task.delay(0.1, function()
+task.delay(0.1,function()
     redzlib:SetBackgroundImage(135003123565230)
 end)
 
-local MainTab = Window:MakeTab({"Brookhaven", "home"})
+-- PLAYER TAB
 
-MainTab:AddSection({"Player Commands"})
+local PlayerTab = Window:MakeTab({"Player","user"})
 
--- WALKSPEED
-local walkspeedEnabled = false
-local normalSpeed = 16
+PlayerTab:AddSection({"Player Mods"})
 
-local WalkToggle = MainTab:AddToggle({
-    Name = "Speed",
-    Description = "Aumenta velocidade",
-    Default = false
+-- SPEED
+
+PlayerTab:AddSlider({
+    Name = "WalkSpeed",
+    Min = 16,
+    Max = 200,
+    Increase = 1,
+    Default = 16,
+
+    Callback = function(Value)
+
+        local Humanoid =
+        game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+
+        if Humanoid then
+            Humanoid.WalkSpeed = Value
+        end
+    end
 })
 
-WalkToggle:Callback(function(Value)
-    walkspeedEnabled = Value
+-- JUMP
 
-    if Value then
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
-    else
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = normalSpeed
+PlayerTab:AddSlider({
+    Name = "JumpPower",
+    Min = 50,
+    Max = 300,
+    Increase = 1,
+    Default = 50,
+
+    Callback = function(Value)
+
+        local Humanoid =
+        game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
+
+        if Humanoid then
+            Humanoid.JumpPower = Value
+        end
     end
-end)
-
--- JUMPPOWER
-local JumpToggle = MainTab:AddToggle({
-    Name = "High Jump",
-    Description = "Pulo alto",
-    Default = false
 })
-
-JumpToggle:Callback(function(Value)
-    if Value then
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 120
-    else
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
-    end
-end)
 
 -- FLY
-local flying = false
-local bodyGyro
-local bodyVelocity
 
-local FlyToggle = MainTab:AddToggle({
+local Fly = false
+local FlySpeed = 80
+
+PlayerTab:AddToggle({
     Name = "Fly",
-    Description = "Voar com botão ligar/desligar",
-    Default = false
+    Description = "Smooth Fly",
+
+    Default = false,
+
+    Callback = function(Value)
+
+        Fly = Value
+
+        local player = game.Players.LocalPlayer
+        local char = player.Character
+        local hrp = char:WaitForChild("HumanoidRootPart")
+
+        if Fly then
+
+            local BV = Instance.new("BodyVelocity")
+            BV.MaxForce = Vector3.new(9e9,9e9,9e9)
+            BV.Velocity = Vector3.zero
+            BV.Parent = hrp
+
+            local BG = Instance.new("BodyGyro")
+            BG.MaxTorque = Vector3.new(9e9,9e9,9e9)
+            BG.P = 1000
+            BG.CFrame = workspace.CurrentCamera.CFrame
+            BG.Parent = hrp
+
+            task.spawn(function()
+
+                while Fly do
+                    task.wait()
+
+                    local cam = workspace.CurrentCamera
+
+                    BG.CFrame = cam.CFrame
+
+                    BV.Velocity =
+                        cam.CFrame.LookVector * FlySpeed
+                end
+
+                BV:Destroy()
+                BG:Destroy()
+
+            end)
+        end
+    end
 })
 
-FlyToggle:Callback(function(Value)
-    flying = Value
+-- NOCLIP
 
-    local player = game.Players.LocalPlayer
-    local char = player.Character
-    local hrp = char:WaitForChild("HumanoidRootPart")
+local noclip = false
 
-    if Value then
-        bodyGyro = Instance.new("BodyGyro")
-        bodyVelocity = Instance.new("BodyVelocity")
+PlayerTab:AddToggle({
+    Name = "Noclip",
+    Description = "Walk Through Walls",
 
-        bodyGyro.P = 9e4
-        bodyGyro.Parent = hrp
-        bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-        bodyGyro.CFrame = hrp.CFrame
+    Default = false,
 
-        bodyVelocity.Parent = hrp
-        bodyVelocity.Velocity = Vector3.new(0,0,0)
-        bodyVelocity.MaxForce = Vector3.new(9e9,9e9,9e9)
+    Callback = function(Value)
 
-        task.spawn(function()
-            while flying do
-                task.wait()
+        noclip = Value
 
-                bodyGyro.CFrame = workspace.CurrentCamera.CFrame
-                bodyVelocity.Velocity = workspace.CurrentCamera.CFrame.LookVector * 70
+    end
+})
+
+game:GetService("RunService").Stepped:Connect(function()
+
+    if noclip then
+
+        local char = game.Players.LocalPlayer.Character
+
+        if char then
+
+            for _,v in pairs(char:GetDescendants()) do
+
+                if v:IsA("BasePart") then
+                    v.CanCollide = false
+                end
             end
-        end)
-    else
-        if bodyGyro then
-            bodyGyro:Destroy()
-        end
-
-        if bodyVelocity then
-            bodyVelocity:Destroy()
         end
     end
 end)
 
--- NOCLIP
-local noclip = false
+-- ESP
 
-local NoclipToggle = MainTab:AddToggle({
-    Name = "Noclip",
-    Description = "Atravessar paredes",
-    Default = false
-})
+local ESP = false
 
-NoclipToggle:Callback(function(Value)
-    noclip = Value
+PlayerTab:AddToggle({
+    Name = "ESP Players",
+    Description = "See Players",
 
-    task.spawn(function()
-        while noclip do
-            task.wait()
+    Default = false,
 
-            local char = game.Players.LocalPlayer.Character
+    Callback = function(Value)
 
-            if char then
-                for _,v in pairs(char:GetDescendants()) do
-                    if v:IsA("BasePart") then
-                        v.CanCollide = false
+        ESP = Value
+
+        for _,plr in pairs(game.Players:GetPlayers()) do
+
+            if plr ~= game.Players.LocalPlayer then
+
+                if Value then
+
+                    local Highlight =
+                    Instance.new("Highlight")
+
+                    Highlight.Name = "HoneyESP"
+                    Highlight.FillTransparency = 0.5
+                    Highlight.OutlineTransparency = 0
+                    Highlight.Parent = plr.Character
+
+                else
+
+                    if plr.Character and
+                    plr.Character:FindFirstChild("HoneyESP") then
+
+                        plr.Character.HoneyESP:Destroy()
+
                     end
                 end
             end
         end
-    end)
-end)
-
--- ESP PLAYERS
-local esp = false
-
-local ESPToggle = MainTab:AddToggle({
-    Name = "ESP Players",
-    Description = "Ver jogadores pelas paredes",
-    Default = false
-})
-
-ESPToggle:Callback(function(Value)
-    esp = Value
-
-    for _,player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-
-            if Value then
-                local highlight = Instance.new("Highlight")
-                highlight.Name = "HoneyESP"
-                highlight.FillColor = Color3.fromRGB(255,0,0)
-                highlight.OutlineColor = Color3.fromRGB(255,255,255)
-                highlight.Parent = player.Character
-            else
-                if player.Character and player.Character:FindFirstChild("HoneyESP") then
-                    player.Character.HoneyESP:Destroy()
-                end
-            end
-
-        end
-    end
-end)
-
--- TELEPORT TOOL
-MainTab:AddButton({
-    Name = "Teleport Spawn",
-    Callback = function()
-        local char = game.Players.LocalPlayer.Character
-
-        if char then
-            char:MoveTo(Vector3.new(0,5,0))
-        end
     end
 })
 
--- REJOIN
-MainTab:AddButton({
-    Name = "Rejoin Server",
-    Callback = function()
-        game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
+-- TELEPORT TAB
+
+local TeleportTab =
+Window:MakeTab({"Teleport","map-pin"})
+
+TeleportTab:AddSection({"Brookhaven Places"})
+
+TeleportTab:AddButton({
+    "Bank",
+    function()
+
+        game.Players.LocalPlayer.Character:MoveTo(
+            Vector3.new(-399,23,73)
+        )
+
     end
 })
 
--- COPY DISCORD
-MainTab:AddDiscordInvite({
-    Name = "Honey Hub",
-    Description = "Discord Oficial",
-    Logo = "rbxassetid://18751483361",
-    Invite = "https://discord.gg/3b5YppShP"
+TeleportTab:AddButton({
+    "Hospital",
+    function()
+
+        game.Players.LocalPlayer.Character:MoveTo(
+            Vector3.new(-309,54,-25)
+        )
+
+    end
 })
+
+TeleportTab:AddButton({
+    "Police",
+    function()
+
+        game.Players.LocalPlayer.Character:MoveTo(
+            Vector3.new(-164,23,189)
+        )
+
+    end
+})
+
+TeleportTab:AddButton({
+    "Spawn",
+    function()
+
+        game.Players.LocalPlayer.Character:MoveTo(
+            Vector3.new(0,5,0)
+        )
+
+    end
+})
+
+-- VEHICLE TAB
+
+local VehicleTab =
+Window:MakeTab({"Vehicle","car"})
+
+VehicleTab:Add
