@@ -1,31 +1,54 @@
-local redzlib = loadstring(game:HttpGet(
-"https://raw.githubusercontent.com/cruzkaua170-source/Honey-hub-/main/main.lua"
+local Fluent = loadstring(game:HttpGet(
+"https://raw.githubusercontent.com/dawid-scripts/Fluent/master/source.lua"
 ))()
 
-local Window = redzlib:MakeWindow({
+Fluent:SetTheme("Dark")
+
+Fluent.Themes.Dark.Background = Color3.fromRGB(10, 20, 40)
+Fluent.Themes.Dark.SecondaryBackground = Color3.fromRGB(20, 35, 65)
+Fluent.Themes.Dark.Accent = Color3.fromRGB(0, 140, 255)
+Fluent.Themes.Dark.Text = Color3.fromRGB(255,255,255)
+
+local Window = Fluent:CreateWindow({
     Title = "Honey Hub",
     SubTitle = "Brookhaven",
-    SaveFolder = "HoneyHub.json",
-    Icon = "",
-    Key = "HONEY-8C2D9-4B5E7-6F1A3"
+    TabWidth = 170,
+    Size = UDim2.fromOffset(850, 600),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
 })
 
-task.delay(0.1,function()
-    redzlib:SetBackgroundImage(135003123565230)
-end)
+local Tabs = {
+    Main = Window:AddTab({ Title = "Main" }),
+    Player = Window:AddTab({ Title = "Player" }),
+    Teleport = Window:AddTab({ Title = "Teleport" }),
+    Misc = Window:AddTab({ Title = "Misc" })
+}
 
-local MainTab = Window:MakeTab({"Brookhaven","home"})
+-- MAIN
 
-MainTab:AddSection({"Player"})
+Tabs.Main:AddParagraph({
+    Title = "Honey Hub",
+    Content = "Premium Brookhaven Script"
+})
 
--- SPEED
+Tabs.Main:AddButton({
+    Title = "Copy Discord",
+    Callback = function()
+        setclipboard("https://discord.gg/3b5YppShP")
+    end
+})
 
-MainTab:AddSlider({
-    Name = "Speed",
+-- PLAYER
+
+Tabs.Player:AddSlider("Speed", {
+    Title = "WalkSpeed",
+    Description = "Player Speed",
+    Default = 16,
     Min = 16,
     Max = 100,
-    Increase = 1,
-    Default = 16,
+    Rounding = 1,
 
     Callback = function(Value)
 
@@ -38,14 +61,13 @@ MainTab:AddSlider({
     end
 })
 
--- JUMP
-
-MainTab:AddSlider({
-    Name = "Jump",
+Tabs.Player:AddSlider("Jump", {
+    Title = "JumpPower",
+    Description = "Player Jump",
+    Default = 50,
     Min = 50,
     Max = 200,
-    Increase = 1,
-    Default = 50,
+    Rounding = 1,
 
     Callback = function(Value)
 
@@ -58,13 +80,13 @@ MainTab:AddSlider({
     end
 })
 
--- FLY PREMIUM
+-- FLY
 
 local Fly = false
 local FlySpeed = 70
 
-MainTab:AddToggle({
-    Name = "Fly",
+Tabs.Player:AddToggle("Fly", {
+    Title = "Fly",
     Description = "Smooth Fly",
     Default = false,
 
@@ -140,8 +162,8 @@ MainTab:AddToggle({
 
 local noclip = false
 
-MainTab:AddToggle({
-    Name = "Noclip",
+Tabs.Player:AddToggle("Noclip", {
+    Title = "Noclip",
     Description = "Walk Through Walls",
     Default = false,
 
@@ -170,9 +192,9 @@ end)
 
 local esp = false
 
-MainTab:AddToggle({
-    Name = "ESP",
-    Description = "Players ESP",
+Tabs.Player:AddToggle("ESP", {
+    Title = "ESP",
+    Description = "See Players",
     Default = false,
 
     Callback = function(Value)
@@ -208,10 +230,11 @@ MainTab:AddToggle({
     end
 })
 
-MainTab:AddSection({"Teleport"})
+-- TELEPORTS
 
-MainTab:AddButton({
-    Name = "Bank",
+Tabs.Teleport:AddButton({
+    Title = "Bank",
+
     Callback = function()
 
         game.Players.LocalPlayer.Character:MoveTo(
@@ -221,8 +244,9 @@ MainTab:AddButton({
     end
 })
 
-MainTab:AddButton({
-    Name = "Hospital",
+Tabs.Teleport:AddButton({
+    Title = "Hospital",
+
     Callback = function()
 
         game.Players.LocalPlayer.Character:MoveTo(
@@ -232,8 +256,9 @@ MainTab:AddButton({
     end
 })
 
-MainTab:AddButton({
-    Name = "Police",
+Tabs.Teleport:AddButton({
+    Title = "Police",
+
     Callback = function()
 
         game.Players.LocalPlayer.Character:MoveTo(
@@ -243,8 +268,9 @@ MainTab:AddButton({
     end
 })
 
-MainTab:AddButton({
-    Name = "Spawn",
+Tabs.Teleport:AddButton({
+    Title = "Spawn",
+
     Callback = function()
 
         game.Players.LocalPlayer.Character:MoveTo(
@@ -254,10 +280,11 @@ MainTab:AddButton({
     end
 })
 
-MainTab:AddSection({"Misc"})
+-- MISC
 
-MainTab:AddButton({
-    Name = "Rejoin",
+Tabs.Misc:AddButton({
+    Title = "Rejoin",
+
     Callback = function()
 
         game:GetService("TeleportService"):Teleport(
@@ -268,23 +295,8 @@ MainTab:AddButton({
     end
 })
 
-MainTab:AddDiscordInvite({
-    Name = "Honey Hub",
-    Description = "Join Discord",
-    Logo = "rbxassetid://18751483361",
-    Invite = "https://discord.gg/3b5YppShP"
-})
-
-local minimizeIcon = "rbxassetid://71014873973869"
-
-Window:AddMinimizeButton({
-    Button = {
-        Image = minimizeIcon,
-        BackgroundTransparency = 0,
-        Size = UDim2.fromOffset(50,20)
-    },
-
-    Corner = {
-        CornerRadius = UDim.new(100,1)
-    },
+Fluent:Notify({
+    Title = "Honey Hub",
+    Content = "Loaded Successfully",
+    Duration = 5
 })
