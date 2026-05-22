@@ -5,7 +5,7 @@ local Window = redzlib:MakeWindow({
     Title = "Honey-Hub",
     SubTitle = "Brookhaven",
     SaveFolder = "Honey.json",
-    Key = "HONEYKEY"
+    Key =  "HONEY-8C2D9-4B5E7-6F1A3"
 })
 
 task.delay(0.1,function()
