@@ -1,4 +1,4 @@
---// MAIN.LUA
+--// HONEY HUB - MAIN.LUA (TUDO EM 1 ARQUIVO)
 
 local redzlib = loadstring(game:HttpGet("COLOQUE_AQUI_O_RAW_DA_REDZLIB"))()
 
@@ -19,15 +19,15 @@ Window:Dialog({
     Text = "This is a Dialog",
     Options = {
         {"Confirm", function()
-
+            print("Confirmado")
         end},
 
         {"Maybe", function()
-
+            print("Maybe")
         end},
 
         {"Cancel", function()
-
+            print("Cancelado")
         end}
     }
 })
@@ -36,7 +36,6 @@ local minimizeIcon = "rbxassetid://71014873973869"
 
 pcall(function()
     if writefile and getcustomasset then
-
         if not isfile("honey_minimize.png") then
             local success, content = pcall(function()
                 return game:HttpGet("https://iili.io/C9E3NXn.png")
@@ -62,16 +61,16 @@ Window:AddMinimizeButton({
 
     Corner = {
         CornerRadius = UDim.new(100, 1)
-    },
+    }
 })
 
-local Tab1 = Window:MakeTab({"teste", "cherry"})
+local Tab1 = Window:MakeTab({"Teste", "cherry"})
 
 Tab1:AddDiscordInvite({
     Name = "Honey Hub",
     Description = "Join server",
     Logo = "rbxassetid://18751483361",
-    Invite = "Link discord invite",
+    Invite = "Link discord invite"
 })
 
 Tab1:AddSection({"Section"})
@@ -90,12 +89,12 @@ Tab1:AddButton({
 
 local Toggle1 = Tab1:AddToggle({
     Name = "Toggle",
-    Description = "This is a <font color='rgb(88, 101, 242)'>Toggle</font> Example",
+    Description = "This is a Toggle Example",
     Default = false
 })
 
 Toggle1:Callback(function(Value)
-    print(Value)
+    print("Toggle:", Value)
 end)
 
 Tab1:AddSlider({
@@ -106,34 +105,6 @@ Tab1:AddSlider({
     Default = 16,
 
     Callback = function(Value)
-        print(Value)
-    end
-})
-
-Tab1:AddDropdown({
-    Name = "Players List",
-    Description = "Select the <font color='rgb(88, 101, 242)'>Number</font>",
-
-    Options = {
-        "one",
-        "two",
-        "three"
-    },
-
-    Default = "two",
-    Flag = "dropdown_teste",
-
-    Callback = function(Value)
-        print(Value)
-    end
-})
-
-Tab1:AddTextBox({
-    Name = "Name item",
-    Description = "1 Item on 1 Server",
-    PlaceholderText = "item only",
-
-    Callback = function(Value)
-        print(Value)
+        print("Speed:", Value)
     end
 })
