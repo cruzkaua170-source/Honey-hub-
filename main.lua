@@ -520,5 +520,6 @@ Tab1:AddTextBox({
   Callback = function(Value)
 end 
 })
-return   redzlib
+local redzlib = loadstring(game:HttpGet("https://githubusercontent.com"))()
+
 
