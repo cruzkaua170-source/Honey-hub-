@@ -1,274 +1,192 @@
 local redzlib = loadstring(game:HttpGet(
-"https://raw.githubusercontent.com/cruzkaua170-source/Honey-hub-/main/main.lua"))()
+    "https://raw.githubusercontent.com/cruzkaua170-source/Honey-hub-/main/main.lua"
+))()
 
 local Window = redzlib:MakeWindow({
-    Title = "Honey-Hub",
+    Title = "Honey Hub",
     SubTitle = "Brookhaven",
-    SaveFolder = "Honey.json",
-    Key =  "HONEY-8C2D9-4B5E7-6F1A3"
+    SaveFolder = "HoneyHub.json",
+    Icon = "",
+    Key = "HONEY-8C2D9-4B5E7-6F1A3"
 })
 
-task.delay(0.1,function()
+task.delay(0.1, function()
     redzlib:SetBackgroundImage(135003123565230)
 end)
 
--- PLAYER TAB
+local MainTab = Window:MakeTab({"Brookhaven", "home"})
 
-local PlayerTab = Window:MakeTab({"Player","user"})
+MainTab:AddSection({"Player Commands"})
 
-PlayerTab:AddSection({"Player Mods"})
+-- WALKSPEED
+local walkspeedEnabled = false
+local normalSpeed = 16
 
-PlayerTab:AddSlider({
-    Name = "WalkSpeed",
-    Min = 16,
-    Max = 200,
-    Increase = 1,
-    Default = 16,
-
-    Callback = function(Value)
-
-        local Humanoid =
-            game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-
-        if Humanoid then
-            Humanoid.WalkSpeed = Value
-        end
-
-    end
+local WalkToggle = MainTab:AddToggle({
+    Name = "Speed",
+    Description = "Aumenta velocidade",
+    Default = false
 })
 
-PlayerTab:AddSlider({
-    Name = "JumpPower",
-    Min = 50,
-    Max = 300,
-    Increase = 1,
-    Default = 50,
+WalkToggle:Callback(function(Value)
+    walkspeedEnabled = Value
 
-    Callback = function(Value)
-
-        local Humanoid =
-            game.Players.LocalPlayer.Character:FindFirstChild("Humanoid")
-
-        if Humanoid then
-            Humanoid.JumpPower = Value
-        end
-
+    if Value then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
+    else
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = normalSpeed
     end
+end)
+
+-- JUMPPOWER
+local JumpToggle = MainTab:AddToggle({
+    Name = "High Jump",
+    Description = "Pulo alto",
+    Default = false
 })
 
-PlayerTab:AddButton({
-    "Fly",
-    function()
-
-        loadstring(game:HttpGet(
-            "https://pastebin.com/raw/YSL3xKYU"
-        ))()
-
+JumpToggle:Callback(function(Value)
+    if Value then
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 120
+    else
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 50
     end
+end)
+
+-- FLY
+local flying = false
+local bodyGyro
+local bodyVelocity
+
+local FlyToggle = MainTab:AddToggle({
+    Name = "Fly",
+    Description = "Voar com botão ligar/desligar",
+    Default = false
 })
 
-local noclip = false
+FlyToggle:Callback(function(Value)
+    flying = Value
 
-PlayerTab:AddToggle({
-    Name = "Noclip",
-    Default = false,
+    local player = game.Players.LocalPlayer
+    local char = player.Character
+    local hrp = char:WaitForChild("HumanoidRootPart")
 
-    Callback = function(Value)
-        noclip = Value
-    end
-})
+    if Value then
+        bodyGyro = Instance.new("BodyGyro")
+        bodyVelocity = Instance.new("BodyVelocity")
 
-game:GetService("RunService").Stepped:Connect(function()
+        bodyGyro.P = 9e4
+        bodyGyro.Parent = hrp
+        bodyGyro.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bodyGyro.CFrame = hrp.CFrame
 
-    if noclip then
+        bodyVelocity.Parent = hrp
+        bodyVelocity.Velocity = Vector3.new(0,0,0)
+        bodyVelocity.MaxForce = Vector3.new(9e9,9e9,9e9)
 
-        local char = game.Players.LocalPlayer.Character
+        task.spawn(function()
+            while flying do
+                task.wait()
 
-        if char then
-            for _,v in pairs(char:GetDescendants()) do
-                if v:IsA("BasePart") then
-                    v.CanCollide = false
-                end
+                bodyGyro.CFrame = workspace.CurrentCamera.CFrame
+                bodyVelocity.Velocity = workspace.CurrentCamera.CFrame.LookVector * 70
             end
+        end)
+    else
+        if bodyGyro then
+            bodyGyro:Destroy()
+        end
+
+        if bodyVelocity then
+            bodyVelocity:Destroy()
         end
     end
 end)
 
--- VISUAL TAB
+-- NOCLIP
+local noclip = false
 
-local VisualTab = Window:MakeTab({"Visual","eye"})
-
-VisualTab:AddSection({"Visual Mods"})
-
-VisualTab:AddButton({
-    "ESP",
-    function()
-
-        loadstring(game:HttpGet(
-            "https://raw.githubusercontent.com/ic3w0lf22/Unnamed-ESP/master/UnnamedESP.lua"
-        ))()
-
-    end
+local NoclipToggle = MainTab:AddToggle({
+    Name = "Noclip",
+    Description = "Atravessar paredes",
+    Default = false
 })
 
-VisualTab:AddButton({
-    "FullBright",
-    function()
+NoclipToggle:Callback(function(Value)
+    noclip = Value
 
-        game.Lighting.Brightness = 5
-        game.Lighting.ClockTime = 12
-        game.Lighting.FogEnd = 100000
+    task.spawn(function()
+        while noclip do
+            task.wait()
 
-    end
+            local char = game.Players.LocalPlayer.Character
+
+            if char then
+                for _,v in pairs(char:GetDescendants()) do
+                    if v:IsA("BasePart") then
+                        v.CanCollide = false
+                    end
+                end
+            end
+        end
+    end)
+end)
+
+-- ESP PLAYERS
+local esp = false
+
+local ESPToggle = MainTab:AddToggle({
+    Name = "ESP Players",
+    Description = "Ver jogadores pelas paredes",
+    Default = false
 })
 
--- TROLL TAB
+ESPToggle:Callback(function(Value)
+    esp = Value
 
-local TrollTab = Window:MakeTab({"Troll","skull"})
+    for _,player in pairs(game.Players:GetPlayers()) do
+        if player ~= game.Players.LocalPlayer then
 
-TrollTab:AddSection({"Troll Commands"})
-
-TrollTab:AddButton({
-    "Spin",
-    function()
-
-        local hrp =
-            game.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-
-        if hrp then
-
-            while true do
-                hrp.CFrame =
-                    hrp.CFrame * CFrame.Angles(0,math.rad(30),0)
-
-                task.wait()
+            if Value then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "HoneyESP"
+                highlight.FillColor = Color3.fromRGB(255,0,0)
+                highlight.OutlineColor = Color3.fromRGB(255,255,255)
+                highlight.Parent = player.Character
+            else
+                if player.Character and player.Character:FindFirstChild("HoneyESP") then
+                    player.Character.HoneyESP:Destroy()
+                end
             end
 
         end
     end
-})
+end)
 
-TrollTab:AddButton({
-    "Reset",
-    function()
+-- TELEPORT TOOL
+MainTab:AddButton({
+    Name = "Teleport Spawn",
+    Callback = function()
+        local char = game.Players.LocalPlayer.Character
 
-        game.Players.LocalPlayer.Character:BreakJoints()
-
-    end
-})
-
--- PLAYER TAB 2
-
-local PlayersTab = Window:MakeTab({"Players","users"})
-
-PlayersTab:AddSection({"Player Commands"})
-
-local PlayersList = {}
-
-for _,v in pairs(game.Players:GetPlayers()) do
-    if v ~= game.Players.LocalPlayer then
-        table.insert(PlayersList,v.Name)
-    end
-end
-
-local SelectedPlayer = nil
-
-PlayersTab:AddDropdown({
-    Name = "Select Player",
-    Options = PlayersList,
-    Default = PlayersList[1],
-
-    Callback = function(Value)
-        SelectedPlayer = Value
-    end
-})
-
-PlayersTab:AddButton({
-    "Teleport To Player",
-    function()
-
-        if SelectedPlayer then
-
-            local plr =
-                game.Players:FindFirstChild(SelectedPlayer)
-
-            if plr and plr.Character then
-
-                game.Players.LocalPlayer.Character:PivotTo(
-                    plr.Character:GetPivot()
-                )
-
-            end
+        if char then
+            char:MoveTo(Vector3.new(0,5,0))
         end
     end
 })
 
-PlayersTab:AddButton({
-    "View Player",
-    function()
-
-        if SelectedPlayer then
-
-            local plr =
-                game.Players:FindFirstChild(SelectedPlayer)
-
-            if plr and plr.Character then
-
-                workspace.CurrentCamera.CameraSubject =
-                    plr.Character.Humanoid
-
-            end
-        end
+-- REJOIN
+MainTab:AddButton({
+    Name = "Rejoin Server",
+    Callback = function()
+        game:GetService("TeleportService"):Teleport(game.PlaceId, game.Players.LocalPlayer)
     end
 })
 
-PlayersTab:AddButton({
-    "UnView",
-    function()
-
-        workspace.CurrentCamera.CameraSubject =
-            game.Players.LocalPlayer.Character.Humanoid
-
-    end
-})
-
--- MISC TAB
-
-local MiscTab = Window:MakeTab({"Misc","settings"})
-
-MiscTab:AddButton({
-    "Infinite Yield",
-    function()
-
-        loadstring(game:HttpGet(
-            "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"
-        ))()
-
-    end
-})
-
-MiscTab:AddButton({
-    "Rejoin",
-    function()
-
-        game:GetService("TeleportService"):Teleport(
-            game.PlaceId,
-            game.Players.LocalPlayer
-        )
-
-    end
-})
-
-local minimizeIcon = "rbxassetid://71014873973869"
-
-Window:AddMinimizeButton({
-    Button = {
-        Image = minimizeIcon,
-        BackgroundTransparency = 0,
-        Size = UDim2.fromOffset(50,20)
-    },
-
-    Corner = {
-        CornerRadius = UDim.new(100,1)
-    },
+-- COPY DISCORD
+MainTab:AddDiscordInvite({
+    Name = "Honey Hub",
+    Description = "Discord Oficial",
+    Logo = "rbxassetid://18751483361",
+    Invite = "https://discord.gg/3b5YppShP"
 })
