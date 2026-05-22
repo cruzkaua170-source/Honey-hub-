@@ -14,18 +14,19 @@ task.delay(0.1,function()
     redzlib:SetBackgroundImage(135003123565230)
 end)
 
-local PlayerTab = Window:MakeTab({"Player","home"})
+local MainTab = Window:MakeTab({"Brookhaven","home"})
 
-PlayerTab:AddSection({"Player Mods"})
+MainTab:AddSection({"Player"})
 
 -- SPEED
 
-PlayerTab:AddSlider({
-    Name = "WalkSpeed",
+MainTab:AddSlider({
+    Name = "Speed",
     Min = 16,
     Max = 100,
     Increase = 1,
     Default = 16,
+
     Callback = function(Value)
 
         local Humanoid =
@@ -39,12 +40,13 @@ PlayerTab:AddSlider({
 
 -- JUMP
 
-PlayerTab:AddSlider({
-    Name = "JumpPower",
+MainTab:AddSlider({
+    Name = "Jump",
     Min = 50,
     Max = 200,
     Increase = 1,
     Default = 50,
+
     Callback = function(Value)
 
         local Humanoid =
@@ -56,65 +58,79 @@ PlayerTab:AddSlider({
     end
 })
 
--- FLY
+-- FLY PREMIUM
 
-local FlyEnabled = false
+local Fly = false
+local FlySpeed = 70
 
-PlayerTab:AddToggle({
+MainTab:AddToggle({
     Name = "Fly",
     Description = "Smooth Fly",
     Default = false,
+
     Callback = function(Value)
 
-        FlyEnabled = Value
+        Fly = Value
 
-        local plr = game.Players.LocalPlayer
-        local char = plr.Character
+        local player = game.Players.LocalPlayer
+        local char = player.Character
         local hrp = char:WaitForChild("HumanoidRootPart")
+        local humanoid = char:WaitForChild("Humanoid")
 
-        if Value then
-
-            local BV = Instance.new("BodyVelocity")
-            BV.Name = "HoneyFlyVelocity"
-            BV.MaxForce = Vector3.new(1e9,1e9,1e9)
-            BV.Velocity = Vector3.zero
-            BV.Parent = hrp
+        if Fly then
 
             local BG = Instance.new("BodyGyro")
             BG.Name = "HoneyFlyGyro"
-            BG.MaxTorque = Vector3.new(1e9,1e9,1e9)
-            BG.P = 1000
-            BG.CFrame = workspace.CurrentCamera.CFrame
+            BG.P = 9e4
             BG.Parent = hrp
+            BG.MaxTorque = Vector3.new(9e9,9e9,9e9)
+            BG.CFrame = hrp.CFrame
+
+            local BV = Instance.new("BodyVelocity")
+            BV.Name = "HoneyFlyVelocity"
+            BV.Parent = hrp
+            BV.MaxForce = Vector3.new(9e9,9e9,9e9)
+            BV.Velocity = Vector3.new(0,0,0)
 
             task.spawn(function()
 
-                while FlyEnabled do
+                while Fly do
                     task.wait()
 
-                    BV.Velocity =
-                        workspace.CurrentCamera.CFrame.LookVector * 70
+                    humanoid.PlatformStand = true
 
-                    BG.CFrame =
-                        workspace.CurrentCamera.CFrame
+                    local cam = workspace.CurrentCamera
+                    local moveDirection = humanoid.MoveDirection
+
+                    BV.Velocity =
+                        (cam.CFrame.LookVector * moveDirection.Z +
+                        cam.CFrame.RightVector * moveDirection.X)
+                        * FlySpeed
+
+                    BG.CFrame = cam.CFrame
+                end
+
+                humanoid.PlatformStand = false
+
+                if hrp:FindFirstChild("HoneyFlyGyro") then
+                    hrp.HoneyFlyGyro:Destroy()
                 end
 
                 if hrp:FindFirstChild("HoneyFlyVelocity") then
                     hrp.HoneyFlyVelocity:Destroy()
                 end
-
-                if hrp:FindFirstChild("HoneyFlyGyro") then
-                    hrp.HoneyFlyGyro:Destroy()
-                end
             end)
+
         else
 
-            if hrp:FindFirstChild("HoneyFlyVelocity") then
-                hrp.HoneyFlyVelocity:Destroy()
-            end
+            humanoid.PlatformStand = false
 
             if hrp:FindFirstChild("HoneyFlyGyro") then
                 hrp.HoneyFlyGyro:Destroy()
+            end
+
+            if hrp:FindFirstChild("HoneyFlyVelocity") then
+                hrp.HoneyFlyVelocity:Destroy()
             end
         end
     end
@@ -124,10 +140,11 @@ PlayerTab:AddToggle({
 
 local noclip = false
 
-PlayerTab:AddToggle({
+MainTab:AddToggle({
     Name = "Noclip",
     Description = "Walk Through Walls",
     Default = false,
+
     Callback = function(Value)
         noclip = Value
     end
@@ -141,7 +158,6 @@ game:GetService("RunService").Stepped:Connect(function()
 
         if char then
             for _,v in pairs(char:GetDescendants()) do
-
                 if v:IsA("BasePart") then
                     v.CanCollide = false
                 end
@@ -150,14 +166,51 @@ game:GetService("RunService").Stepped:Connect(function()
     end
 end)
 
--- TELEPORT TAB
+-- ESP
 
-local TeleportTab =
-Window:MakeTab({"Teleport","cherry"})
+local esp = false
 
-TeleportTab:AddSection({"Brookhaven Places"})
+MainTab:AddToggle({
+    Name = "ESP",
+    Description = "Players ESP",
+    Default = false,
 
-TeleportTab:AddButton({
+    Callback = function(Value)
+
+        esp = Value
+
+        for _,plr in pairs(game.Players:GetPlayers()) do
+
+            if plr ~= game.Players.LocalPlayer then
+
+                if Value then
+
+                    if plr.Character and
+                    not plr.Character:FindFirstChild("HoneyESP") then
+
+                        local Highlight = Instance.new("Highlight")
+                        Highlight.Name = "HoneyESP"
+                        Highlight.FillTransparency = 0.5
+                        Highlight.OutlineTransparency = 0
+                        Highlight.Parent = plr.Character
+                    end
+
+                else
+
+                    if plr.Character and
+                    plr.Character:FindFirstChild("HoneyESP") then
+
+                        plr.Character.HoneyESP:Destroy()
+                    end
+                end
+            end
+        end
+    end
+})
+
+MainTab:AddSection({"Teleport"})
+
+MainTab:AddButton({
     Name = "Bank",
     Callback = function()
 
@@ -168,7 +221,7 @@ TeleportTab:AddButton({
     end
 })
 
-TeleportTab:AddButton({
+MainTab:AddButton({
     Name = "Hospital",
     Callback = function()
 
@@ -179,7 +232,7 @@ TeleportTab:AddButton({
     end
 })
 
-TeleportTab:AddButton({
+MainTab:AddButton({
     Name = "Police",
     Callback = function()
 
@@ -190,7 +243,7 @@ TeleportTab:AddButton({
     end
 })
 
-TeleportTab:AddButton({
+MainTab:AddButton({
     Name = "Spawn",
     Callback = function()
 
@@ -201,14 +254,9 @@ TeleportTab:AddButton({
     end
 })
 
--- MISC
+MainTab:AddSection({"Misc"})
 
-local MiscTab =
-Window:MakeTab({"Misc","settings"})
-
-MiscTab:AddSection({"Hub"})
-
-MiscTab:AddButton({
+MainTab:AddButton({
     Name = "Rejoin",
     Callback = function()
 
@@ -220,7 +268,7 @@ MiscTab:AddButton({
     end
 })
 
-MiscTab:AddDiscordInvite({
+MainTab:AddDiscordInvite({
     Name = "Honey Hub",
     Description = "Join Discord",
     Logo = "rbxassetid://18751483361",
