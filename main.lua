@@ -520,6 +520,30 @@ Tab1:AddTextBox({
   Callback = function(Value)
 end 
 })
+
+-- [[ ESTE BLOCO ATIVA O SEU MENU APÓS AS 500 LINHAS ]]
+local Window = redzlib:MakeWindow({
+    Title = "Honey-Hub",
+    SubTitle = "by Breno",
+    SaveFolder = "Honey.json",
+    Key = "HONEY-8C2D9-4B5E7-6F1A3"
+})
+
+local Tab1 = Window:MakeTab({"Principal", "apple"})
+
+Tab1:AddButton({"Testar Script", function()
+    print("Honey Hub funcionando!")
+end})
+
+Tab1:AddTextBox({
+    Name = "Name item",
+    Description = "1 Item on 1 Server",
+    PlaceholderText = "item only",
+    Callback = function(Value)
+        print("Item selecionado: " .. Value)
+    end
+})
+
 return redzlib
 
 
