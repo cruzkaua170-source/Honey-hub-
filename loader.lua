@@ -14,9 +14,7 @@ task.delay(0.1,function()
     redzlib:SetBackgroundImage(135003123565230)
 end)
 
--- PLAYER TAB
-
-local PlayerTab = Window:MakeTab({"Player","user"})
+local PlayerTab = Window:MakeTab({"Player","home"})
 
 PlayerTab:AddSection({"Player Mods"})
 
@@ -25,10 +23,9 @@ PlayerTab:AddSection({"Player Mods"})
 PlayerTab:AddSlider({
     Name = "WalkSpeed",
     Min = 16,
-    Max = 200,
+    Max = 100,
     Increase = 1,
     Default = 16,
-
     Callback = function(Value)
 
         local Humanoid =
@@ -45,10 +42,9 @@ PlayerTab:AddSlider({
 PlayerTab:AddSlider({
     Name = "JumpPower",
     Min = 50,
-    Max = 300,
+    Max = 200,
     Increase = 1,
     Default = 50,
-
     Callback = function(Value)
 
         local Humanoid =
@@ -62,53 +58,64 @@ PlayerTab:AddSlider({
 
 -- FLY
 
-local Fly = false
-local FlySpeed = 80
+local FlyEnabled = false
 
 PlayerTab:AddToggle({
     Name = "Fly",
     Description = "Smooth Fly",
-
     Default = false,
-
     Callback = function(Value)
 
-        Fly = Value
+        FlyEnabled = Value
 
-        local player = game.Players.LocalPlayer
-        local char = player.Character
+        local plr = game.Players.LocalPlayer
+        local char = plr.Character
         local hrp = char:WaitForChild("HumanoidRootPart")
 
-        if Fly then
+        if Value then
 
             local BV = Instance.new("BodyVelocity")
-            BV.MaxForce = Vector3.new(9e9,9e9,9e9)
+            BV.Name = "HoneyFlyVelocity"
+            BV.MaxForce = Vector3.new(1e9,1e9,1e9)
             BV.Velocity = Vector3.zero
             BV.Parent = hrp
 
             local BG = Instance.new("BodyGyro")
-            BG.MaxTorque = Vector3.new(9e9,9e9,9e9)
+            BG.Name = "HoneyFlyGyro"
+            BG.MaxTorque = Vector3.new(1e9,1e9,1e9)
             BG.P = 1000
             BG.CFrame = workspace.CurrentCamera.CFrame
             BG.Parent = hrp
 
             task.spawn(function()
 
-                while Fly do
+                while FlyEnabled do
                     task.wait()
 
-                    local cam = workspace.CurrentCamera
-
-                    BG.CFrame = cam.CFrame
-
                     BV.Velocity =
-                        cam.CFrame.LookVector * FlySpeed
+                        workspace.CurrentCamera.CFrame.LookVector * 70
+
+                    BG.CFrame =
+                        workspace.CurrentCamera.CFrame
                 end
 
-                BV:Destroy()
-                BG:Destroy()
+                if hrp:FindFirstChild("HoneyFlyVelocity") then
+                    hrp.HoneyFlyVelocity:Destroy()
+                end
 
+                if hrp:FindFirstChild("HoneyFlyGyro") then
+                    hrp.HoneyFlyGyro:Destroy()
+                end
             end)
+        else
+
+            if hrp:FindFirstChild("HoneyFlyVelocity") then
+                hrp.HoneyFlyVelocity:Destroy()
+            end
+
+            if hrp:FindFirstChild("HoneyFlyGyro") then
+                hrp.HoneyFlyGyro:Destroy()
+            end
         end
     end
 })
@@ -120,13 +127,9 @@ local noclip = false
 PlayerTab:AddToggle({
     Name = "Noclip",
     Description = "Walk Through Walls",
-
     Default = false,
-
     Callback = function(Value)
-
         noclip = Value
-
     end
 })
 
@@ -137,7 +140,6 @@ game:GetService("RunService").Stepped:Connect(function()
         local char = game.Players.LocalPlayer.Character
 
         if char then
-
             for _,v in pairs(char:GetDescendants()) do
 
                 if v:IsA("BasePart") then
@@ -148,58 +150,16 @@ game:GetService("RunService").Stepped:Connect(function()
     end
 end)
 
--- ESP
-
-local ESP = false
-
-PlayerTab:AddToggle({
-    Name = "ESP Players",
-    Description = "See Players",
-
-    Default = false,
-
-    Callback = function(Value)
-
-        ESP = Value
-
-        for _,plr in pairs(game.Players:GetPlayers()) do
-
-            if plr ~= game.Players.LocalPlayer then
-
-                if Value then
-
-                    local Highlight =
-                    Instance.new("Highlight")
-
-                    Highlight.Name = "HoneyESP"
-                    Highlight.FillTransparency = 0.5
-                    Highlight.OutlineTransparency = 0
-                    Highlight.Parent = plr.Character
-
-                else
-
-                    if plr.Character and
-                    plr.Character:FindFirstChild("HoneyESP") then
-
-                        plr.Character.HoneyESP:Destroy()
-
-                    end
-                end
-            end
-        end
-    end
-})
-
 -- TELEPORT TAB
 
 local TeleportTab =
-Window:MakeTab({"Teleport","map-pin"})
+Window:MakeTab({"Teleport","cherry"})
 
 TeleportTab:AddSection({"Brookhaven Places"})
 
 TeleportTab:AddButton({
-    "Bank",
-    function()
+    Name = "Bank",
+    Callback = function()
 
         game.Players.LocalPlayer.Character:MoveTo(
             Vector3.new(-399,23,73)
@@ -209,8 +169,8 @@ TeleportTab:AddButton({
 })
 
 TeleportTab:AddButton({
-    "Hospital",
-    function()
+    Name = "Hospital",
+    Callback = function()
 
         game.Players.LocalPlayer.Character:MoveTo(
             Vector3.new(-309,54,-25)
@@ -220,8 +180,8 @@ TeleportTab:AddButton({
 })
 
 TeleportTab:AddButton({
-    "Police",
-    function()
+    Name = "Police",
+    Callback = function()
 
         game.Players.LocalPlayer.Character:MoveTo(
             Vector3.new(-164,23,189)
@@ -231,8 +191,8 @@ TeleportTab:AddButton({
 })
 
 TeleportTab:AddButton({
-    "Spawn",
-    function()
+    Name = "Spawn",
+    Callback = function()
 
         game.Players.LocalPlayer.Character:MoveTo(
             Vector3.new(0,5,0)
@@ -241,9 +201,42 @@ TeleportTab:AddButton({
     end
 })
 
--- VEHICLE TAB
+-- MISC
 
-local VehicleTab =
-Window:MakeTab({"Vehicle","car"})
+local MiscTab =
+Window:MakeTab({"Misc","settings"})
 
-VehicleTab:Add
+MiscTab:AddSection({"Hub"})
+
+MiscTab:AddButton({
+    Name = "Rejoin",
+    Callback = function()
+
+        game:GetService("TeleportService"):Teleport(
+            game.PlaceId,
+            game.Players.LocalPlayer
+        )
+
+    end
+})
+
+MiscTab:AddDiscordInvite({
+    Name = "Honey Hub",
+    Description = "Join Discord",
+    Logo = "rbxassetid://18751483361",
+    Invite = "https://discord.gg/3b5YppShP"
+})
+
+local minimizeIcon = "rbxassetid://71014873973869"
+
+Window:AddMinimizeButton({
+    Button = {
+        Image = minimizeIcon,
+        BackgroundTransparency = 0,
+        Size = UDim2.fromOffset(50,20)
+    },
+
+    Corner = {
+        CornerRadius = UDim.new(100,1)
+    },
+})
